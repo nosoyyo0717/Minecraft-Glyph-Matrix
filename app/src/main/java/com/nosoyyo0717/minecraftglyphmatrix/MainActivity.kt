@@ -90,6 +90,33 @@ val MOB_COMPATIBILITY_TAGS = mapOf(
     "Cake" to listOf("3"),
     "Bell" to listOf("3"),
     "Pale Oak Boat" to listOf("3"),
+    "Spyglass" to listOf("3"),
+    "Name Tag" to listOf("3"),
+    "Book and Quill" to listOf("3"),
+    "Map" to listOf("3"),
+    "Water Bucket" to listOf("3"),
+    "Milk Bucket" to listOf("3"),
+    "Powder Snow Bucket" to listOf("3"),
+    "Bucket of Axolotl" to listOf("3"),
+    "Elytra" to listOf("3"),
+    "Broken Elytra" to listOf("3"),
+    "Totem of Undying" to listOf("3"),
+    "White Bundle" to listOf("3"),
+    "Music Disc Strad" to listOf("3"),
+    "Music Disc Tears" to listOf("3"),
+    "Music Disc Lava Chicken" to listOf("3"),
+    "Iron Axe" to listOf("3"),
+    "Iron Pickaxe" to listOf("3"),
+    "Iron Shovel" to listOf("3"),
+    "Iron Sword" to listOf("3"),
+    "Iron Spear" to listOf("3"),
+    "Fishing Rod" to listOf("3"),
+    "Carrot on a Stick" to listOf("3"),
+    "Warped Fungus on a Stick" to listOf("3"),
+    "Iron Helmet" to listOf("3"),
+    "Iron Chestplate" to listOf("3"),
+    "Iron Leggings" to listOf("3"),
+    "Iron Boots" to listOf("3"),
 )
 
 class MainActivity : ComponentActivity() {
@@ -126,11 +153,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// --- 1. THE ROUTER ---
-// 🚀 THE NEW GLOBAL LAUNCH CACHE
-// This runs in the background the millisecond the app opens!
-// 🚀 THE NEW GLOBAL LAUNCH CACHE (HIGH-RES BAKING)
-// 🚀 THE NEW GLOBAL LAUNCH CACHE (PROPER LED MATH)
 object MatrixCache {
     val bitmaps = mutableMapOf<String, ImageBitmap>()
     val matrices = mutableMapOf<String, IntArray>()
@@ -160,8 +182,6 @@ object MatrixCache {
                 val visualGridSize = if (deviceModel == "4aPro") 13f else 25f
                 val dotSize = imageSize / visualGridSize
                 val xOffset = if (deviceModel == "4aPro") -(2f * dotSize) else 0f
-
-                // 3. PROPER LED MATH: Dynamic gap and rounding based on screen size
                 val gap = dotSize * 0.05f // Creates a tiny 5% physical gap between LEDs
                 val cornerRadius = dotSize * 0.15f // Creates a slight 15% rounding for the hardware look
 
@@ -214,7 +234,15 @@ fun AppRouter(glyphManager: GlyphMatrixManager?) {
     val masterCategories = mapOf(
         "Minecraft Mob Face" to listOf("Creeper","Skeleton", "Enderman", "Ghastling","Creaking", "Carved Snow Golem", "Wither"),
         "Minecraft Food" to listOf("Carrot", "Potato", "Cake"),
-        "Minecraft Items" to listOf("Wheat Seed", "Sugarcane", "Turtle Egg", "White Candle", "Pale Oak Boat"),
+
+        "Minecraft Armor and Tools" to listOf("Elytra", "Broken Elytra", "Iron Axe", "Iron Pickaxe", "Iron Shovel", "Iron Sword", "Iron Spear", "Fishing Rod",
+            "Warped Fungus on a Stick", "Iron Helmet", "Iron Chestplate", "Iron Leggings", "Iron Boots"),
+
+        "Minecraft Items" to listOf("Wheat Seed", "Sugarcane", "Turtle Egg", "White Candle", "Pale Oak Boat", "Spyglass", "Name Tag", "Book and Quill", "Map",
+            "Water Bucket", "Milk Bucket", "Powder Snow Bucket", "Bucket of Axolotl", "Totem of Undying", "White Bundle", ),
+
+        "Minecraft Music Discs" to listOf("Music Disc Strad", "Music Disc Tears", "Music Disc Lava Chicken"),
+
         "Minecraft Blocks" to listOf("Firefly Bush", "Campfire", "Lantern", "White Bed", "Pale Oak Sign", "Oak Door", "Spruce Door", "Birch Door", "Jungle Door",
             "Acacia Door", "Dark Oak Door", "Mangrove Door", "Cherry Door", "Pale Oak Door", "Bamboo Door", "Crimson Door", "Warped Door", "Iron Door", "Copper Door",
             "Bell")
@@ -464,11 +492,8 @@ fun MatrixPreviewScreen(mobName: String, glyphManager: GlyphMatrixManager?, onBa
     }
 }
 
-// 🚀 THE NEW, MATHEMATICALLY FREE PREVIEW DRAWER
-// 🚀 THE MATHEMATICALLY FREE PREVIEW DRAWER (HD VERSION)
 @Composable
 fun MiniMatrixPreview(mobName: String, modifier: Modifier = Modifier) {
-    // It pulls the high-res image we baked at app launch
     val bitmap = MatrixCache.bitmaps[mobName]
 
     if (bitmap != null) {
@@ -483,15 +508,13 @@ fun MiniMatrixPreview(mobName: String, modifier: Modifier = Modifier) {
 // === THE TRAFFIC COP ===
 fun getMatrixForMob(mobName: String, deviceModel: String): IntArray {
     if (deviceModel == "4aPro") {
-        // --- ROUTE TO NEW 17x17 ARRAYS ---
         return when (mobName) {
             "Creeper" -> getCreeperFace_4aPro() // We load the 4aPro version!
             "Enderman" -> getEndermanFace_4aPro()
             // TODO: Add your other 4a Pro versions here as you make them!
             else -> IntArray(289) { 0 }
         }
-    } else {
-        // --- ROUTE TO EXISTING 25x25 ARRAYS (Phone 3 / Default) ---
+    } else if (deviceModel == "3"){
         return when (mobName) {
             "Creeper" -> getCreeperFace()
             "Enderman" -> getEndermanFace()
@@ -528,10 +551,38 @@ fun getMatrixForMob(mobName: String, deviceModel: String): IntArray {
             "Cake" -> getCake()
             "Bell" -> getBell()
             "Pale Oak Boat" -> getPaleOakBoat()
+            "Spyglass" -> getSpyglass()
+            "Name Tag" -> getNameTag()
+            "Book and Quill" -> getBookandQuill()
+            "Map" -> getMap()
+            "Water Bucket" -> getWaterBucket()
+            "Milk Bucket" -> getMilkBucket()
+            "Powder Snow Bucket" -> getPowderSnowBucket()
+            "Bucket of Axolotl" -> getBucketofAxolotl()
+            "Elytra" -> getElytra()
+            "Broken Elytra" -> getBrokenElytra()
+            "Totem of Undying" -> getTotemofUndying()
+            "White Bundle" -> getWhiteBundle()
+            "Music Disc Strad" -> getMusicDiscStrad()
+            "Music Disc Tears" -> getMusicDiscTears()
+            "Music Disc Lava Chicken" -> getMusicDiscLavaChicken()
+            "Iron Axe" -> getIronAxe()
+            "Iron Pickaxe" -> getIronPickaxe()
+            "Iron Shovel" -> getIronShovel()
+            "Iron Sword" -> getIronSword()
+            "Iron Spear" ->getIronSpear()
+            "Fishing Rod" -> getFishingRod()
+            "Carrot on a Stick" -> getCarrotonaStick()
+            "Warped Fungus on a Stick" -> getWarpedFungusonaStick()
+            "Iron Helmet" -> getIronHelmet()
+            "Iron Chestplate" -> getIronChestplate()
+            "Iron Leggings" -> getIronLeggings()
+            "Iron Boots" -> getIronBoots()
             "My Design" -> getMyCustomDesign()
             else -> IntArray(625) { 0 }
         }
     }
+    return IntArray(625) { 0 }
 }
 
 private fun exportGlyphNotification(context: Context, mobName: String, matrix: IntArray, includeSound: Boolean) {
