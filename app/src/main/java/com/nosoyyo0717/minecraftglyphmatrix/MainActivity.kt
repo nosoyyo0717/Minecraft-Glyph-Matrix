@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
 val PHONE_3_ACTIVE_WIDTHS = listOf(
     7, 11, 15, 17, 19, 21, 21, 23, 23, 25, 25, 25, 25,
     25, 25, 25, 23, 23, 21, 21, 19, 17, 15, 11, 7
@@ -55,19 +56,19 @@ val PHONE_4A_PRO_ACTIVE_WIDTHS = listOf(
 )
 
 val MOB_COMPATIBILITY_TAGS = mapOf(
-    "Creeper" to listOf("3"),
-    "Skeleton" to listOf("3"),
-    "Enderman" to listOf("3", "4aPro"),
+    "Creeper" to listOf("3", "4aPro"),
+    "Skeleton" to listOf("3", "4aPro"),
+    "Enderman" to listOf("3"),
     "Ghastling" to listOf("3"),
     "Creaking" to listOf("3"),
-    "Carved Snow Golem" to listOf("3"),
+    "Carved Snow Golem" to listOf("3", "4aPro"),
     "Wither" to listOf("3"),
     "Carrot" to listOf("3"),
     "Potato" to listOf("3"),
     "Wheat Seed" to listOf("3"),
     "Firefly Bush" to listOf("3"),
     "Sugarcane" to listOf("3"),
-    "Turtle Egg" to listOf("3"),
+    "Turtle Egg" to listOf("3", "4aPro"),
     "White Candle" to listOf("3"),
     "Campfire" to listOf("3"),
     "Lantern" to listOf("3"),
@@ -118,7 +119,7 @@ val MOB_COMPATIBILITY_TAGS = mapOf(
     "Iron Leggings" to listOf("3"),
     "Iron Boots" to listOf("3"),
 )
-
+//todo: update matrix
 class MainActivity : ComponentActivity() {
 
     private var glyphManager: GlyphMatrixManager? = null
@@ -157,22 +158,20 @@ object MatrixCache {
     val bitmaps = mutableMapOf<String, ImageBitmap>()
     val matrices = mutableMapOf<String, IntArray>()
 
-    suspend fun initialize(deviceModel: String, masterCategories: Map<String, List<String>>) {
+    suspend fun initialize(deviceModel: String, activeCategories: Map<String, List<String>>) {
         withContext(Dispatchers.Default) {
             bitmaps.clear()
             matrices.clear()
-            val allMobs = masterCategories.values.flatten().toSet()
+            val allMobs = activeCategories.values.flatten().toSet()
 
-            // We bake a high-resolution 500x500 image so the LEDs look incredibly sharp!
             val imageSize = 500f
 
             allMobs.forEach { mobName ->
-                // 1. Cache the raw array for the Export button
                 val matrix = getMatrixForMob(mobName, deviceModel)
                 matrices[mobName] = matrix
 
-                // 2. Setup the Native Android Canvas
-                val gridSize = if (deviceModel == "4aPro") 17 else 25
+                // 1. FIXED: The grid ruler is strictly 13!
+                val gridSize = if (deviceModel == "4aPro") 13 else 25
                 val activeWidths = if (deviceModel == "4aPro") PHONE_4A_PRO_ACTIVE_WIDTHS else PHONE_3_ACTIVE_WIDTHS
 
                 val bmp = Bitmap.createBitmap(imageSize.toInt(), imageSize.toInt(), Bitmap.Config.ARGB_8888)
@@ -181,9 +180,12 @@ object MatrixCache {
 
                 val visualGridSize = if (deviceModel == "4aPro") 13f else 25f
                 val dotSize = imageSize / visualGridSize
-                val xOffset = if (deviceModel == "4aPro") -(2f * dotSize) else 0f
-                val gap = dotSize * 0.05f // Creates a tiny 5% physical gap between LEDs
-                val cornerRadius = dotSize * 0.15f // Creates a slight 15% rounding for the hardware look
+
+                // 2. FIXED: Removed the -2 offset so it centers perfectly!
+                val xOffset = 0f
+
+                val gap = dotSize * 0.05f
+                val cornerRadius = dotSize * 0.15f
 
                 for (row in 0 until gridSize) {
                     val activeCount = activeWidths.getOrElse(row) { 0 }
@@ -197,14 +199,12 @@ object MatrixCache {
                         if (brightness > 0) {
                             paint.color = android.graphics.Color.argb(brightness, 255, 255, 255)
                         } else {
-                            paint.color = android.graphics.Color.rgb(35, 35, 35) // Slightly darker empty LED
+                            paint.color = android.graphics.Color.rgb(35, 35, 35)
                         }
 
-                        // Calculate the coordinates
                         val left = (col * dotSize) + xOffset
                         val top = row * dotSize
 
-                        // DRAW THE LED: Mathematically tight, slightly rounded squares!
                         canvas.drawRoundRect(
                             left + gap, top + gap,
                             left + dotSize - gap, top + dotSize - gap,
@@ -212,15 +212,12 @@ object MatrixCache {
                         )
                     }
                 }
-
-                // 4. Save the perfectly centered high-res image to RAM
                 bitmaps[mobName] = bmp.asImageBitmap()
             }
         }
     }
 }
 
-// --- 1. THE ROUTER ---
 @Composable
 fun AppRouter(glyphManager: GlyphMatrixManager?) {
     var currentScreen by remember { mutableStateOf("HOME") }
@@ -234,39 +231,35 @@ fun AppRouter(glyphManager: GlyphMatrixManager?) {
     val masterCategories = mapOf(
         "Minecraft Mob Face" to listOf("Creeper","Skeleton", "Enderman", "Ghastling","Creaking", "Carved Snow Golem", "Wither"),
         "Minecraft Food" to listOf("Carrot", "Potato", "Cake"),
-
-        "Minecraft Armor and Tools" to listOf("Elytra", "Broken Elytra", "Iron Axe", "Iron Pickaxe", "Iron Shovel", "Iron Sword", "Iron Spear", "Fishing Rod",
-            "Warped Fungus on a Stick", "Iron Helmet", "Iron Chestplate", "Iron Leggings", "Iron Boots"),
-
-        "Minecraft Items" to listOf("Wheat Seed", "Sugarcane", "Turtle Egg", "White Candle", "Pale Oak Boat", "Spyglass", "Name Tag", "Book and Quill", "Map",
-            "Water Bucket", "Milk Bucket", "Powder Snow Bucket", "Bucket of Axolotl", "Totem of Undying", "White Bundle", ),
-
+        "Minecraft Armor and Tools" to listOf("Elytra", "Broken Elytra", "Iron Axe", "Iron Pickaxe", "Iron Shovel", "Iron Sword", "Iron Spear", "Fishing Rod", "Carrot on a Stick", "Warped Fungus on a Stick", "Iron Helmet", "Iron Chestplate", "Iron Leggings", "Iron Boots"),
+        "Minecraft Items" to listOf("Wheat Seed", "Sugarcane", "Turtle Egg", "White Candle", "Pale Oak Boat", "Spyglass", "Name Tag", "Book and Quill", "Map", "Water Bucket", "Milk Bucket", "Powder Snow Bucket", "Bucket of Axolotl", "Totem of Undying", "White Bundle"),
         "Minecraft Music Discs" to listOf("Music Disc Strad", "Music Disc Tears", "Music Disc Lava Chicken"),
-
-        "Minecraft Blocks" to listOf("Firefly Bush", "Campfire", "Lantern", "White Bed", "Pale Oak Sign", "Oak Door", "Spruce Door", "Birch Door", "Jungle Door",
-            "Acacia Door", "Dark Oak Door", "Mangrove Door", "Cherry Door", "Pale Oak Door", "Bamboo Door", "Crimson Door", "Warped Door", "Iron Door", "Copper Door",
-            "Bell")
+        "Minecraft Blocks" to listOf("Firefly Bush", "Campfire", "Lantern", "White Bed", "Pale Oak Sign", "Oak Door", "Spruce Door", "Birch Door", "Jungle Door", "Acacia Door", "Dark Oak Door", "Mangrove Door", "Cherry Door", "Pale Oak Door", "Bamboo Door", "Crimson Door", "Warped Door", "Iron Door", "Copper Door", "Bell")
     )
+    //todo: update category
+    val completed4aProItems = listOf("Creeper", "Skeleton", "Carved Snow Golem", "Turtle Egg")
 
-    val filteredCategories = remember(activeDeviceMode) {
-        masterCategories.mapValues { entry ->
-            entry.value.filter { mobName ->
-                val supported = MOB_COMPATIBILITY_TAGS[mobName] ?: listOf("3", "4aPro")
-                supported.contains(activeDeviceMode)
+    val displayCategories = remember(activeDeviceMode) {
+        masterCategories.mapValues { (categoryName, mobList) ->
+            mobList.filter { mobName ->
+                val supportedTags = MOB_COMPATIBILITY_TAGS[mobName] ?: listOf("3", "4aPro")
+                val isSupported = supportedTags.contains(activeDeviceMode)
+                val isFinishedFor4a = if (activeDeviceMode == "4aPro") completed4aProItems.contains(mobName) else true
+
+                isSupported && isFinishedFor4a
             }
-        }
+        }.filterValues { it.isNotEmpty() } // Automatically deletes completely empty categories!
     }
 
-    // 🚀 LAUNCH CACHE TRIGGER
     var isCacheReady by remember { mutableStateOf(false) }
 
     LaunchedEffect(activeDeviceMode) {
         isCacheReady = false
-        MatrixCache.initialize(activeDeviceMode, masterCategories)
+        // Safely loads only the filtered items so it doesn't crash on empty data
+        MatrixCache.initialize(activeDeviceMode, displayCategories)
         isCacheReady = true
     }
 
-    // Show a loading screen while the images generate in the background
     if (!isCacheReady) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = Color.White)
@@ -287,7 +280,7 @@ fun AppRouter(glyphManager: GlyphMatrixManager?) {
         when (screen) {
             "HOME" -> {
                 HomeScreen(
-                    categories = filteredCategories,
+                    categories = displayCategories, // Uses the newly repaired list
                     deviceModel = activeDeviceMode,
                     isSimulatorMode = isSimulatorMode,
                     onDeviceSwitch = { activeDeviceMode = it },
@@ -300,7 +293,7 @@ fun AppRouter(glyphManager: GlyphMatrixManager?) {
             "CATEGORY_DETAILS" -> {
                 CategoryScreen(
                     categoryName = selectedCategory,
-                    mobList = filteredCategories[selectedCategory] ?: emptyList(),
+                    mobList = displayCategories[selectedCategory] ?: emptyList(),
                     onBackClick = { currentScreen = "HOME" },
                     onMobClick = { mobName ->
                         selectedMob = mobName
@@ -319,7 +312,6 @@ fun AppRouter(glyphManager: GlyphMatrixManager?) {
     }
 }
 
-// --- 2. THE HOME SCREEN ---
 @Composable
 fun HomeScreen(
     categories: Map<String, List<String>>,
@@ -352,6 +344,7 @@ fun HomeScreen(
             }
         }
 
+        // 🚀 FIXED: Set back to exactly 2 columns so your UI cards are large and normal!
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier.fillMaxSize(),
@@ -383,7 +376,6 @@ fun HomeScreen(
                             }
 
                             Crossfade(targetState = mobList[currentIndex], animationSpec = tween(1500), label = "Morph", modifier = Modifier.align(Alignment.Center).padding(bottom = 32.dp)) { currentMobName ->
-                                // 🚀 Passes the name to instantly grab the image
                                 MiniMatrixPreview(mobName = currentMobName, modifier = Modifier.size(90.dp))
                             }
                         }
@@ -399,7 +391,6 @@ fun HomeScreen(
     }
 }
 
-// --- 3. THE CATEGORY SCREEN ---
 @Composable
 fun CategoryScreen(categoryName: String, mobList: List<String>, onBackClick: () -> Unit, onMobClick: (String) -> Unit) {
     Column(modifier = Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -423,7 +414,6 @@ fun CategoryScreen(categoryName: String, mobList: List<String>, onBackClick: () 
                     ) {
                         Column(modifier = Modifier.fillMaxSize().padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                             Box(modifier = Modifier.weight(1f).fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color(0xFF0A0A0A)), contentAlignment = Alignment.Center) {
-                                // 🚀 Instantly loads from cache
                                 MiniMatrixPreview(mobName = mobName, modifier = Modifier.padding(16.dp).aspectRatio(1f))
                             }
                             Spacer(modifier = Modifier.height(16.dp))
@@ -445,10 +435,8 @@ fun CategoryScreen(categoryName: String, mobList: List<String>, onBackClick: () 
     }
 }
 
-// --- 4. THE MATRIX SCREEN ---
 @Composable
 fun MatrixPreviewScreen(mobName: String, glyphManager: GlyphMatrixManager?, onBackClick: () -> Unit) {
-    // Read the array from the cache so we can export it later!
     val currentMatrixState = MatrixCache.matrices[mobName] ?: IntArray(625) { 0 }
 
     var includeSound by remember { mutableStateOf(false) }
@@ -468,7 +456,6 @@ fun MatrixPreviewScreen(mobName: String, glyphManager: GlyphMatrixManager?, onBa
         }
 
         Box(modifier = Modifier.size(320.dp), contentAlignment = Alignment.Center) {
-            // 🚀 The big preview is now instantly loaded from the Image cache too!
             MiniMatrixPreview(mobName = mobName, modifier = Modifier.size(280.dp))
         }
 
@@ -505,14 +492,16 @@ fun MiniMatrixPreview(mobName: String, modifier: Modifier = Modifier) {
         )
     }
 }
-// === THE TRAFFIC COP ===
+
 fun getMatrixForMob(mobName: String, deviceModel: String): IntArray {
     if (deviceModel == "4aPro") {
         return when (mobName) {
-            "Creeper" -> getCreeperFace_4aPro() // We load the 4aPro version!
-            "Enderman" -> getEndermanFace_4aPro()
-            // TODO: Add your other 4a Pro versions here as you make them!
-            else -> IntArray(289) { 0 }
+            //todo: add 4aPro matrix
+            "Creeper" -> getCreeperFace_4aPro()
+            "Skeleton" -> getSkeletonFace_4aPro()
+            "Carved Snow Golem" -> getCarvedSnowGolemFace_4aPro()
+            "Turtle Egg" -> getTurtleEgg_4aPro()
+            else -> IntArray(169) { 0 }
         }
     } else if (deviceModel == "3"){
         return when (mobName) {
