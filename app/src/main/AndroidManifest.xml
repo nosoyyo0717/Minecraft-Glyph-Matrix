@@ -18,7 +18,14 @@
         <!-- Nothing API Key -->
         <meta-data
             android:name="NothingKey" android:value="test" />
-
+        <!-- 🚀 ADD THIS NEW BLOCK RIGHT HERE 🚀 -->
+        <activity
+            android:name=".WidgetConfigActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -29,6 +36,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver android:name=".MatrixWidgetProvider" android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/matrix_widget_info" />
+        </receiver>
 
         <!-- Basic Demo Service -->
         <service

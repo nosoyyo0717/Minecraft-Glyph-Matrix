@@ -118,8 +118,31 @@ val MOB_COMPATIBILITY_TAGS = mapOf(
     "Iron Chestplate" to listOf("3"),
     "Iron Leggings" to listOf("3"),
     "Iron Boots" to listOf("3"),
+    "Iron Horse Armor" to listOf("3"),
+    "Iron Nautilus Armor" to listOf("3"),
+    "Trident" to listOf("3"),
+    "Mace" to listOf("3"),
+    "Firework Loaded Crossbow" to listOf("3"),
+    "Ender Pearl" to listOf("3"),
+    "Eye of Ender" to listOf("3"),
+    "Wind Charge" to listOf("3"),
+    "Bread" to listOf("3"),
+    "Chorus Fruit" to listOf("3"),
+    "Cooked Chicken" to listOf("3"),
+    "Cooked Porkchop" to listOf("3"),
+    "Cookie" to listOf("3"),
+    "Golden Apple" to listOf("3"),
+    "Melon Slice" to listOf("3"),
+    "Ominous Bottle" to listOf("3"),
+    "Pumpkin Pie" to listOf("3"),
+    "Potion of Invisibility" to listOf("3"),
+    "Splash Potion of Invisibility" to listOf("3"),
+    "Bone" to listOf("3"),
+    "Diamond" to listOf("3"),
+    "Emerald" to listOf("3"),
+    "Nether Star" to listOf("3"),
 )
-//todo: update matrix
+//todo: update device list
 class MainActivity : ComponentActivity() {
 
     private var glyphManager: GlyphMatrixManager? = null
@@ -170,7 +193,6 @@ object MatrixCache {
                 val matrix = getMatrixForMob(mobName, deviceModel)
                 matrices[mobName] = matrix
 
-                // 1. FIXED: The grid ruler is strictly 13!
                 val gridSize = if (deviceModel == "4aPro") 13 else 25
                 val activeWidths = if (deviceModel == "4aPro") PHONE_4A_PRO_ACTIVE_WIDTHS else PHONE_3_ACTIVE_WIDTHS
 
@@ -180,8 +202,6 @@ object MatrixCache {
 
                 val visualGridSize = if (deviceModel == "4aPro") 13f else 25f
                 val dotSize = imageSize / visualGridSize
-
-                // 2. FIXED: Removed the -2 offset so it centers perfectly!
                 val xOffset = 0f
 
                 val gap = dotSize * 0.05f
@@ -224,19 +244,26 @@ fun AppRouter(glyphManager: GlyphMatrixManager?) {
     var selectedCategory by remember { mutableStateOf("") }
     var selectedMob by remember { mutableStateOf("") }
 
-    val actualDeviceModel = remember { Build.MODEL }
-    val isSimulatorMode = actualDeviceModel != "A013" && actualDeviceModel != "A014"
-    var activeDeviceMode by remember { mutableStateOf(if (actualDeviceModel == "A014") "4aPro" else "3") }
+    val actualDeviceModel = remember { Build.MODEL ?: "" }
+    val isNative4aPro = remember { actualDeviceModel.contains("4a", ignoreCase = true) || actualDeviceModel.contains("A069P", ignoreCase = true) }
+    val isNativePhone3 = remember { actualDeviceModel.contains("Phone 3", ignoreCase = true) || actualDeviceModel == "A014" || actualDeviceModel == "A013" }
+
+    // 🚀 FIXED: The toggle is BACK for your Phone 2a! It only hides if it natively detects a Phone 3 or 4a Pro.
+    val isSimulatorMode = remember { !(isNative4aPro || isNativePhone3) }
+
+    var activeDeviceMode by remember {
+        mutableStateOf(if (isNative4aPro) "4aPro" else "3")
+    }
 
     val masterCategories = mapOf(
         "Minecraft Mob Face" to listOf("Creeper","Skeleton", "Enderman", "Ghastling","Creaking", "Carved Snow Golem", "Wither"),
-        "Minecraft Food" to listOf("Carrot", "Potato", "Cake"),
-        "Minecraft Armor and Tools" to listOf("Elytra", "Broken Elytra", "Iron Axe", "Iron Pickaxe", "Iron Shovel", "Iron Sword", "Iron Spear", "Fishing Rod", "Carrot on a Stick", "Warped Fungus on a Stick", "Iron Helmet", "Iron Chestplate", "Iron Leggings", "Iron Boots"),
-        "Minecraft Items" to listOf("Wheat Seed", "Sugarcane", "Turtle Egg", "White Candle", "Pale Oak Boat", "Spyglass", "Name Tag", "Book and Quill", "Map", "Water Bucket", "Milk Bucket", "Powder Snow Bucket", "Bucket of Axolotl", "Totem of Undying", "White Bundle"),
+        "Minecraft Food" to listOf("Carrot", "Potato", "Cake", "Bread", "Chorus Fruit", "Cooked Chicken", "Cooked Porkchop", "Cookie", "Golden Apple", "Melon Slice", "Pumpkin Pie"),
+        "Minecraft Armor and Tools" to listOf("Elytra", "Broken Elytra", "Iron Axe", "Iron Pickaxe", "Iron Shovel", "Iron Sword", "Iron Spear", "Fishing Rod", "Carrot on a Stick", "Warped Fungus on a Stick", "Iron Helmet", "Iron Chestplate", "Iron Leggings", "Iron Boots", "Iron Horse Armor", "Iron Nautilus Armor", "Trident", "Mace", "Firework Loaded Crossbow"),
+        "Minecraft Items" to listOf("Wheat Seed", "Sugarcane", "Turtle Egg", "White Candle", "Pale Oak Boat", "Spyglass", "Name Tag", "Book and Quill", "Map", "Water Bucket", "Milk Bucket", "Powder Snow Bucket", "Bucket of Axolotl", "Totem of Undying", "White Bundle", "Ender Pearl", "Eye of Ender", "Wind Charge", "Ominous Bottle", "Potion of Invisibility", "Splash Potion of Invisibility", "Bone", "Diamond", "Emerald", "Nether Star"),
         "Minecraft Music Discs" to listOf("Music Disc Strad", "Music Disc Tears", "Music Disc Lava Chicken"),
         "Minecraft Blocks" to listOf("Firefly Bush", "Campfire", "Lantern", "White Bed", "Pale Oak Sign", "Oak Door", "Spruce Door", "Birch Door", "Jungle Door", "Acacia Door", "Dark Oak Door", "Mangrove Door", "Cherry Door", "Pale Oak Door", "Bamboo Door", "Crimson Door", "Warped Door", "Iron Door", "Copper Door", "Bell")
     )
-    //todo: update category
+    //todo: Update Category
     val completed4aProItems = listOf("Creeper", "Skeleton", "Carved Snow Golem", "Turtle Egg")
 
     val displayCategories = remember(activeDeviceMode) {
@@ -248,14 +275,13 @@ fun AppRouter(glyphManager: GlyphMatrixManager?) {
 
                 isSupported && isFinishedFor4a
             }
-        }.filterValues { it.isNotEmpty() } // Automatically deletes completely empty categories!
+        }.filterValues { it.isNotEmpty() }
     }
 
     var isCacheReady by remember { mutableStateOf(false) }
 
     LaunchedEffect(activeDeviceMode) {
         isCacheReady = false
-        // Safely loads only the filtered items so it doesn't crash on empty data
         MatrixCache.initialize(activeDeviceMode, displayCategories)
         isCacheReady = true
     }
@@ -280,7 +306,7 @@ fun AppRouter(glyphManager: GlyphMatrixManager?) {
         when (screen) {
             "HOME" -> {
                 HomeScreen(
-                    categories = displayCategories, // Uses the newly repaired list
+                    categories = displayCategories,
                     deviceModel = activeDeviceMode,
                     isSimulatorMode = isSimulatorMode,
                     onDeviceSwitch = { activeDeviceMode = it },
@@ -344,7 +370,6 @@ fun HomeScreen(
             }
         }
 
-        // 🚀 FIXED: Set back to exactly 2 columns so your UI cards are large and normal!
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier.fillMaxSize(),
@@ -441,7 +466,13 @@ fun MatrixPreviewScreen(mobName: String, glyphManager: GlyphMatrixManager?, onBa
 
     var includeSound by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val isSupportedDevice = remember { Build.MODEL == "A013" || Build.MODEL == "A014" }
+    val isSupportedDevice = remember {
+        val actualDeviceModel = Build.MODEL ?: ""
+        val isNative4aPro = actualDeviceModel.contains("4a", ignoreCase = true) || actualDeviceModel.contains("A069P", ignoreCase = true)
+        val isNativePhone3 = actualDeviceModel.contains("Phone 3", ignoreCase = true) || actualDeviceModel == "A014" || actualDeviceModel == "A013"
+
+        isNative4aPro || isNativePhone3
+    }
 
     Column(modifier = Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
         Box(modifier = Modifier.fillMaxWidth().padding(top = 40.dp, bottom = 40.dp)) {
@@ -496,7 +527,6 @@ fun MiniMatrixPreview(mobName: String, modifier: Modifier = Modifier) {
 fun getMatrixForMob(mobName: String, deviceModel: String): IntArray {
     if (deviceModel == "4aPro") {
         return when (mobName) {
-            //todo: add 4aPro matrix
             "Creeper" -> getCreeperFace_4aPro()
             "Skeleton" -> getSkeletonFace_4aPro()
             "Carved Snow Golem" -> getCarvedSnowGolemFace_4aPro()
@@ -567,13 +597,36 @@ fun getMatrixForMob(mobName: String, deviceModel: String): IntArray {
             "Iron Chestplate" -> getIronChestplate()
             "Iron Leggings" -> getIronLeggings()
             "Iron Boots" -> getIronBoots()
+            "Iron Horse Armor" -> getIronhorseArmor()
+            "Iron Nautilus Armor" -> getIronNautilusArmor()
+            "Trident" -> getTrident()
+            "Mace" -> getMace()
+            "Firework Loaded Crossbow" -> getFireworkLoadedCrossbow()
+            "Ender Pearl" -> getEnderPearl()
+            "Eye of Ender" -> getEyeofEnder()
+            "Wind Charge" -> getWindCharge()
+            "Bread" -> getBread()
+            "Chorus Fruit" -> getChorusFruit()
+            "Cooked Chicken" -> getCookedChicken()
+            "Cooked Porkchop" -> getCookedPorkchop()
+            "Cookie" -> getCookie()
+            "Golden Apple" -> getGoldenApple()
+            "Melon Slice" -> getMelonSlice()
+            "Ominous Bottle" -> getOminousBottle()
+            "Pumpkin Pie" -> getPumpkinPie()
+            "Potion of Invisibility" -> getPotionofInvisibility()
+            "Splash Potion of Invisibility" -> getSplashPotionofInvisibility()
+            "Bone" -> getBone()
+            "Diamond" -> getDiamond()
+            "Emerald" -> getEmerald()
+            "Nether Star" -> getNetherStar()
             "My Design" -> getMyCustomDesign()
             else -> IntArray(625) { 0 }
         }
     }
     return IntArray(625) { 0 }
 }
-
+//todo: connect matrix
 private fun exportGlyphNotification(context: Context, mobName: String, matrix: IntArray, includeSound: Boolean) {
     if (!includeSound) {
         Toast.makeText(context, "${mobName.uppercase()} Matrix saved to local gallery!", Toast.LENGTH_SHORT).show()
