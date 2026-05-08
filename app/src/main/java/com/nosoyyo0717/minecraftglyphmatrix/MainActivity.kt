@@ -141,6 +141,14 @@ val MOB_COMPATIBILITY_TAGS = mapOf(
     "Diamond" to listOf("3"),
     "Emerald" to listOf("3"),
     "Nether Star" to listOf("3"),
+    "Firework Rocket" to listOf("3"),
+    "Ghast Tear" to listOf("3"),
+    "Honeycomb" to listOf("3"),
+    "Iron Inget" to listOf("3"),
+    "Phantom Membrane" to listOf("3"),
+    "Pink Petals" to listOf("3"),
+    "Snowball" to listOf("3"),
+    "Wheat" to listOf("3"),
 )
 //todo: update device list
 class MainActivity : ComponentActivity() {
@@ -259,7 +267,7 @@ fun AppRouter(glyphManager: GlyphMatrixManager?) {
         "Minecraft Mob Face" to listOf("Creeper","Skeleton", "Enderman", "Ghastling","Creaking", "Carved Snow Golem", "Wither"),
         "Minecraft Food" to listOf("Carrot", "Potato", "Cake", "Bread", "Chorus Fruit", "Cooked Chicken", "Cooked Porkchop", "Cookie", "Golden Apple", "Melon Slice", "Pumpkin Pie"),
         "Minecraft Armor and Tools" to listOf("Elytra", "Broken Elytra", "Iron Axe", "Iron Pickaxe", "Iron Shovel", "Iron Sword", "Iron Spear", "Fishing Rod", "Carrot on a Stick", "Warped Fungus on a Stick", "Iron Helmet", "Iron Chestplate", "Iron Leggings", "Iron Boots", "Iron Horse Armor", "Iron Nautilus Armor", "Trident", "Mace", "Firework Loaded Crossbow"),
-        "Minecraft Items" to listOf("Wheat Seed", "Sugarcane", "Turtle Egg", "White Candle", "Pale Oak Boat", "Spyglass", "Name Tag", "Book and Quill", "Map", "Water Bucket", "Milk Bucket", "Powder Snow Bucket", "Bucket of Axolotl", "Totem of Undying", "White Bundle", "Ender Pearl", "Eye of Ender", "Wind Charge", "Ominous Bottle", "Potion of Invisibility", "Splash Potion of Invisibility", "Bone", "Diamond", "Emerald", "Nether Star"),
+        "Minecraft Items" to listOf("Wheat Seed", "Sugarcane", "Turtle Egg", "White Candle", "Pale Oak Boat", "Spyglass", "Name Tag", "Book and Quill", "Map", "Water Bucket", "Milk Bucket", "Powder Snow Bucket", "Bucket of Axolotl", "Totem of Undying", "White Bundle", "Ender Pearl", "Eye of Ender", "Wind Charge", "Ominous Bottle", "Potion of Invisibility", "Splash Potion of Invisibility", "Bone", "Diamond", "Emerald", "Nether Star", "Firework Rocket", "Ghast Tear", "Honeycomb", "Iron Ingot", "Phantom Membrane", "Pink Petals", "Snowball", "Wheat"),
         "Minecraft Music Discs" to listOf("Music Disc Strad", "Music Disc Tears", "Music Disc Lava Chicken"),
         "Minecraft Blocks" to listOf("Firefly Bush", "Campfire", "Lantern", "White Bed", "Pale Oak Sign", "Oak Door", "Spruce Door", "Birch Door", "Jungle Door", "Acacia Door", "Dark Oak Door", "Mangrove Door", "Cherry Door", "Pale Oak Door", "Bamboo Door", "Crimson Door", "Warped Door", "Iron Door", "Copper Door", "Bell")
     )
@@ -620,6 +628,14 @@ fun getMatrixForMob(mobName: String, deviceModel: String): IntArray {
             "Diamond" -> getDiamond()
             "Emerald" -> getEmerald()
             "Nether Star" -> getNetherStar()
+            "Firework Rocket" -> getFireworkRocket()
+            "Ghast Tear" -> getGhastTear()
+            "Honeycomb" -> getHoneycomb()
+            "Iron Ingot" -> getIronIngot()
+            "Phantom Membrane" -> getPhantomMembrane()
+            "Pink Petals" -> getPinkPetals()
+            "Snowball" -> getSnowball()
+            "Wheat" -> getWheat()
             "My Design" -> getMyCustomDesign()
             else -> IntArray(625) { 0 }
         }
